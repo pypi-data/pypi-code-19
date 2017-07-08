@@ -1,0 +1,12 @@
+from distutils.core import setup
+setup(
+  name = 'collab',
+  packages = ['collab'], # this must be the same as the name above
+  version = '1.0.28',
+  description = 'A library containing basic code useful when creating Docker Images for Collab',
+  long_description = 'A library containing basic code useful when creating Docker Images for Collab',
+  author = 'Florian Dietz',
+  author_email = 'floriandietz44@gmail.com',
+  url='http://example.com',
+  license = 'MIT',
+)
