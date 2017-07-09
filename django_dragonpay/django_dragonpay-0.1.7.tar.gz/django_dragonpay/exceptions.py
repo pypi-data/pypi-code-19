@@ -1,0 +1,2 @@
+class DragonpayException(Exception):
+    pass
