@@ -1,0 +1,30 @@
+"""
+Handlers decorators
+===================
+"""
+from functools import wraps
+
+from aiohttp import web
+
+from .const import JSONAPI, JSONAPI_CONTENT_TYPE
+from .context import RequestContext
+from .errors import HTTPUnsupportedMediaType
+from .helpers import first
+
+
+def jsonapi_content(handler):
+    @wraps(handler)
+    async def wrapper(*args, **kwargs):
+        request = kwargs.get('request')
+        if request is None:
+            request = first(args, key=lambda v: isinstance(v, web.Request))
+        context = request[JSONAPI]
+        assert context and isinstance(context, RequestContext)
+
+        if context.request.content_type != JSONAPI_CONTENT_TYPE:
+            raise HTTPUnsupportedMediaType(
+                detail="Only '{}' content-type "
+                       "is acceptable.".format(JSONAPI_CONTENT_TYPE)
+            )
+        return await handler(*args, **kwargs)
+    return wrapper
