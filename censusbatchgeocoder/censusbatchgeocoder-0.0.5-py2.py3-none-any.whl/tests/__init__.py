@@ -1,0 +1,44 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Tests censusbatchgeocoder wrapper.
+"""
+from __future__ import unicode_literals
+import io
+import os
+import six
+import unittest
+import censusbatchgeocoder
+
+
+class GeocoderTest(unittest.TestCase):
+
+    def setUp(self):
+        self.this_dir = os.path.abspath(os.path.dirname(__file__))
+        self.small_path = os.path.join(self.this_dir, 'small.csv')
+        self.big_path = os.path.join(self.this_dir, 'big.csv')
+
+    def test_stringio(self):
+        with open(self.small_path, 'r') as f:
+            if six.PY3:
+                sample = io.StringIO(f.read())
+            else:
+                sample = io.BytesIO(f.read())
+        result = censusbatchgeocoder.geocode(sample)
+        self.assertEqual(len(result), 5)
+
+    def test_path(self):
+        result = censusbatchgeocoder.geocode(self.small_path)
+        self.assertEqual(len(result), 5)
+
+    def test_nopooling(self):
+        result = censusbatchgeocoder.geocode(self.small_path, pooling=False)
+        self.assertEqual(len(result), 5)
+
+    def test_batch_size(self):
+        result = censusbatchgeocoder.geocode(self.small_path, batch_size=2)
+        self.assertEqual(len(result), 5)
+
+    def test_big_batch(self):
+        result = censusbatchgeocoder.geocode(self.big_path)
+        self.assertEqual(len(result), 1498)
