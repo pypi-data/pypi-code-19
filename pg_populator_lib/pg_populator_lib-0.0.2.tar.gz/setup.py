@@ -1,0 +1,10 @@
+from setuptools import setup
+
+setup(
+    name='pg_populator_lib',
+    version='0.0.2',
+    author="Jose Antonio Quevedo",
+    author_email="joseantonio.quevedo@gmail.com",
+    packages=['pg_populator_lib']
+
+)
