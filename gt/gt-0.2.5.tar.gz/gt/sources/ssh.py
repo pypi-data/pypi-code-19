@@ -1,0 +1,41 @@
+import subprocess
+
+#TODO use paramiko + improve error handling
+
+class SSH():
+    def __init__(self, host, user, project_dir):
+        self.host = host
+        self.user = user
+        self.project_dir = project_dir
+        self.run = lambda cmd:\
+            subprocess.check_output(["ssh", "{0}@{1}".format(user, host), cmd])
+
+    def location(self, name):
+        return "ssh://{user}@{host}:{path}".format(user=self.user,
+                                                host=self.host,
+                                                path=self.project_dir + "/" + name)
+    
+    def create(self, name):
+        cmd = "cd {projectDir} && mkdir {project} && cd {project} && git init"\
+               .format(projectDir=self.project_dir, project=name)
+        try:
+            self.run(cmd)
+        except:
+            raise Exception("Failed to create {0}, perhaps it already exists".format(name))
+        
+                                        
+    def list(self):
+        try:
+            return self.run("ls " + self.project_dir).decode('utf-8')\
+                       .strip()\
+                       .split("\n")
+        except:
+            raise Exception("Failed to list {0}, does the project directory exist?"
+                            .format(self.project_dir))
+        
+    def delete(self, name):
+        cmd = "cd {projectDir} && rm -r {name}".format(projectDir=self.project_dir, name=name)
+        try:
+            self.run(cmd)
+        except:
+            raise Exception("Failed to remove {0}, does it exist?".format(name))
