@@ -1,0 +1,3 @@
+vc_template = """\
+// test
+"""
