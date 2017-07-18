@@ -1,0 +1,58 @@
+from setuptools import setup
+
+
+setup(
+    name='QuarkUtilities',
+    version="0.0.44",
+    license='BSD',
+    author='Ali Arda Orhan',
+    author_email='arda.orhan@dogantv.com.tr',
+    description='Quark-CMS Utilities.',
+    long_description=__doc__,
+    packages=['quark_utilities', "quark_utilities.commons"],
+    platforms='any',
+    install_requires=[
+        'PyJWT==1.4.2',
+        'jsonschema==2.6.0',
+        'pymongo==3.4.0',
+        'user_agents==1.1.0',
+        "appdirs==1.4.3",
+        "cffi==1.10.0",
+        "cryptography==1.7.2",
+        "geoip2==2.5.0",
+        "idna==2.5",
+        "Jinja2==2.9.6",
+        "jsonschema==2.6.0",
+        "MarkupSafe==1.0",
+        "maxminddb==1.3.0",
+        "motor==1.1",
+        "numpy==1.12.1",
+        "olefile==0.44",
+        "packaging==16.8",
+        "Pillow==4.1.1",
+        "pyasn1==0.2.3",
+        "pycparser==2.17",
+        "pymongo==3.4.0",
+        "pyparsing==2.2.0",
+        "python-dateutil==2.6.0",
+        "requests==2.14.2",
+        "scikit-learn==0.18.1",
+        "six==1.10.0",
+        "sklearn==0.0",
+        "tornado==4.4.2",
+        "ua-parser==0.7.3",
+        "user-agents==1.1.0",
+        "Wand==0.4.4"
+    ],
+    classifiers=[
+        'Environment :: Web Environment',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
+        'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
+        'Topic :: Software Development :: Libraries :: Python Modules'
+    ]
+)
