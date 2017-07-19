@@ -1,0 +1,37 @@
+# -*- coding: utf-8 -*-
+
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+class Ui_WScriptEd(object):
+    def setupUi(self, WScriptEd):
+        WScriptEd.setObjectName("WScriptEd")
+        WScriptEd.resize(556, 410)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/scripted"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        WScriptEd.setWindowIcon(icon)
+        WScriptEd.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
+        self.verticalLayout = QtWidgets.QVBoxLayout(WScriptEd)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem)
+        self.toSeqButton = QtWidgets.QPushButton(WScriptEd)
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(":/macro"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.toSeqButton.setIcon(icon1)
+        self.toSeqButton.setObjectName("toSeqButton")
+        self.horizontalLayout.addWidget(self.toSeqButton)
+        self.verticalLayout.addLayout(self.horizontalLayout)
+
+        self.retranslateUi(WScriptEd)
+        QtCore.QMetaObject.connectSlotsByName(WScriptEd)
+
+    def retranslateUi(self, WScriptEd):
+        _translate = QtCore.QCoreApplication.translate
+        WScriptEd.setWindowTitle(_translate("WScriptEd", "Script Editor"))
+        self.toSeqButton.setText(_translate("WScriptEd", "To Sequence"))
+
+from . import resources_rc
+
