@@ -1,0 +1,2 @@
+class BamIterator(object):
+    pass
