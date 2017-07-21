@@ -1,0 +1,8 @@
+display_name = "fasttrack-client"
+library_name = "fasttrack-client"
+version = "1.0.3"
+author = "Fast Track"
+author_email = "info@fasttrack-intl.com"
+license = "MIT"
+url = "https://github.com/fasttrack/fasttrack-python"
+description = "This Fasttrack library enables you to request the Fasttrack API in a convenient way. For more information about the Fasttrack API please see https://api.fasttrack-intl.com"
