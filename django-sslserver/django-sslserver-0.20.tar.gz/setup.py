@@ -1,0 +1,36 @@
+from distutils.core import setup
+import sslserver
+
+setup(name="django-sslserver",
+      version=sslserver.__version__,
+      author="Ted Dziuba",
+      author_email="tjdziuba@gmail.com",
+      description="An SSL-enabled development server for Django",
+      url="https://github.com/teddziuba/django-sslserver",
+      packages=["sslserver",
+                "sslserver.management",
+                "sslserver.management.commands"],
+      package_dir={"sslserver": "sslserver"},
+      package_data={"sslserver": ["certs/development.crt",
+                                  "certs/development.key"]},
+      install_requires=["setuptools",
+                        "Django >= 1.8"],
+      license="MIT",
+
+      classifiers=[
+          "Environment :: Web Environment",
+          "License :: OSI Approved :: MIT License",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 2",
+          "Programming Language :: Python :: 2.7",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.4",
+          "Programming Language :: Python :: 3.5",
+          "Programming Language :: Python :: 3.6",
+          "Framework :: Django",
+          "Framework :: Django :: 1.8",
+          "Framework :: Django :: 1.9",
+          "Framework :: Django :: 1.10",
+          "Framework :: Django :: 1.11"],
+      )
