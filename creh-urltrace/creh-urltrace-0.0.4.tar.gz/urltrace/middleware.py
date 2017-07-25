@@ -1,0 +1,19 @@
+from urltrace.actions import register
+
+class UrlTraceMiddleware():
+
+    def process_request(self, request):
+        origin = ""
+        if "HTTP_HOST" in request.META:
+            url_host = request.META['HTTP_HOST']
+            if 'HTTP_REFERER' in request.META:
+                if url_host in request.META['HTTP_REFERER']:
+                    origin = request.META['HTTP_REFERER'].split(url_host)[1]
+                else:
+                    origin = request.META['HTTP_REFERER']
+
+        if origin <> "" and origin[0] <> "/":
+            name_group_trace = register.register_url_trace(origin)
+            request.session = {"name_group_trace":name_group_trace}
+
+        pass
