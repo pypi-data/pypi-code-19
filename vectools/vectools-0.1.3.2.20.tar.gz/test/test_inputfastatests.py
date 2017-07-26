@@ -1,0 +1,15 @@
+from lib.inputoutput import ParseFasta
+
+def testfastainput():
+    test_input_fasta = """>AllAminoAcids
+ARNDCEQGHILKMFPSTWYVARNDCEQGHILKMFPSTWYVARNDCEQGHILKMFPSTWYVARNDCEQGHILKMFPSTW
+YVARNDCEQGHILKMFPSTWYVARNDCEQGHILKMFPSTWYVARNDCEQGHILKMFPSTWYVARNDCEQGHILKMFPS
+TWYVARNDCEQGHILKMFPSTWYVARNDCEQGHILKMFPSTWYVARNDCEQGHILKMFPSTWYV""".split("\n")
+
+    test_output_fasta_title = ">AllAminoAcids"
+    test_output_fasta_seq = """ARNDCEQGHILKMFPSTWYVARNDCEQGHILKMFPSTWYVARNDCEQGHILKMFPSTWYVARNDCEQGHILKMFPSTWYVARNDCEQGHILKMFPSTWYVARNDCEQGHILKMFPSTWYVARNDCEQGHILKMFPSTWYVARNDCEQGHILKMFPSTWYVARNDCEQGHILKMFPSTWYVARNDCEQGHILKMFPSTWYVARNDCEQGHILKMFPSTWYV"""
+
+    input_fasta_obj = ParseFasta()
+
+    for test_gen_out_title, test_gen_out_seq in input_fasta_obj.generatefastaobjects(test_input_fasta):
+        assert (test_gen_out_title, test_gen_out_seq) == (test_output_fasta_title, test_output_fasta_seq)
