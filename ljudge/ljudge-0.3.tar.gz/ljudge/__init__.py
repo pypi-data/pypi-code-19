@@ -1,0 +1,1 @@
+from .ljudge import run
