@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2016 BlueData Software, Inc.
+#
+
+from version import __version__ as VERSION
+
+BDS_WB_VERSION = VERSION
+
+DEFAULT_INT_NEGONE = -1
+
+DEFAULT_STR_ONE = '1'
+DEFAULT_STR_ALL = 'all'
+DEFAULT_STR_EMPTY = "''"
+DEFAULT_STR_VERSION = '1.0'
+DEFAULT_STR_DEFAULT = 'default'
+
+DEFAULT_CONFIG_API_VER = '4'
+DEFAULT_CATALOG_API_VER = '2'
+
+DEFAULT_BOOL_TRUE= True
+DEFAULT_BOOL_FALSE = False
+
+DEFAULT_CATEGORY_HADOOP = 'Hadoop'
