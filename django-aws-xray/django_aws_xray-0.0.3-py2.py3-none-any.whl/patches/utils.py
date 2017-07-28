@@ -1,0 +1,18 @@
+from functools import partial, wraps
+
+from django_xray.traces import trace
+
+
+def patch_method(target, name, external_decorator=None):
+
+    def decorator(patch_function):
+        original_function = getattr(target, name)
+
+        @wraps(patch_function)
+        def wrapper(*args, **kw):
+            return patch_function(original_function, *args, **kw)
+
+        setattr(target, name, wrapper)
+        return wrapper
+
+    return decorator
