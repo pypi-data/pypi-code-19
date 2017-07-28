@@ -1,0 +1,207 @@
+import itertools
+import copy
+from operator import attrgetter
+from collections import namedtuple
+
+from sklearn.base import TransformerMixin
+from sklearn.utils.validation import check_random_state
+
+from cartesian.util import make_it
+
+
+class Primitive(object):
+    def __init__(self, name, function, arity):
+        self.name = name
+        self.function = function
+        self.arity = arity
+
+
+class Constant(Primitive):
+    arity = 0
+    def __init__(self, name):
+        self.name = name
+
+
+class Terminal(Primitive):
+    arity = 0
+    def __init__(self, name):
+        self.name = name
+
+
+PrimitiveSet = namedtuple("PrimitiveSet", "operators terminals max_arity mapping imapping context")
+
+
+def create_pset(primitives):
+    operators = [p for p in primitives if p.arity > 0]
+    terminals = [p for p in primitives if p.arity == 0]
+
+    if operators:
+        max_arity = max(operators, key=attrgetter("arity")).arity
+    else:
+        max_arity = 0
+
+    mapping = {i: prim for i, prim in enumerate(sorted(terminals, key=attrgetter("name")) \
+                                              + sorted(operators, key=attrgetter("name")))}
+
+    imapping = inv_map = {v: k for k, v in mapping.items()}
+    context = {f.name: f.function for f in operators}
+
+    return PrimitiveSet(operators=operators, terminals=terminals, imapping=imapping,
+                        max_arity=max_arity, mapping=mapping, context=context)
+
+def _make_map(*lists):
+    i = 0
+    for c, l in enumerate(lists):
+        for r, el in enumerate(l):
+            yield i, el, c, r, l
+            i += 1
+
+class Base(TransformerMixin):
+    def __init__(self, code, outputs, n_back):
+        self.inputs = list(range(len(self.pset.terminals)))
+        self.code = code
+        self.outputs = outputs
+        self.n_back = n_back
+        self.n_columns = len(code)
+        self.n_rows = len(code[0])
+
+    @property
+    def map(self):
+        return {i: (el, c, r, l) for i, el, c, r, l in _make_map(self.inputs, *self.code, self.outputs)}
+
+    def __getitem__(self, index):
+        return self.map[index][0]
+
+    def __setitem__(self, index, item):
+        el, c, r, l = self.map[index]
+        l[r] = item
+
+    def __len__(self):
+        return max(self.map) + 1
+
+    def __repr__(self):
+        #return "in: {}\ncode: {}\nout: {}".format(self.inputs, self.code, self.outputs)
+        return "\n".join(to_polish(self, return_args=False))
+
+    def fit(self, x, y=None, **fit_params):
+        self._transform = compile(self)
+        self.fit_params = fit_params
+        return self
+
+    def transform(self, x, y=None):
+        return self._transform(*x.T)
+
+    @classmethod
+    def create(cls, n_columns, n_rows, n_back, n_out, random_state=None):
+        random_state = check_random_state(random_state)
+
+        operator_keys = list(range(len(cls.pset.terminals), max(cls.pset.mapping) + 1))
+        code = []
+        for i in range(n_columns):
+            column = []
+            for j in range(n_rows):
+                min_input = max(0, (i-n_back)*n_rows) + len(cls.pset.terminals)
+                max_input = i * n_rows - 1 + len(cls.pset.terminals)
+                in_ = list(range(min_input, max_input)) + list(range(0, len(cls.pset.terminals)))
+                gene = [random_state.choice(operator_keys)] + [random_state.choice(in_) for _ in range(cls.pset.max_arity)]
+                column.append(gene)
+            code.append(column)
+        outputs = [random_state.randint(0, n_columns*n_rows + len(cls.pset.terminals)) for _ in range(n_out)]
+        return cls(code, outputs, n_back)
+
+    def __getstate__(self):
+        state = dict(self.__dict__)
+        try:
+            del state["_transform"]
+        except KeyError:
+            pass
+        return state
+
+def point_mutation(individual, random_state=None):
+    random_state = check_random_state(random_state)
+    n_terminals = len(individual.pset.terminals)
+    i = random_state.randint(n_terminals, len(individual))
+    el, c, r, l = individual.map[i]
+    gene = l[r]
+    if isinstance(gene, list):
+        new_gene = gene[:]
+        j = random_state.randint(0, len(gene))
+        if j == 0: # function
+            new_j = individual.pset.imapping[random_state.choice(individual.pset.operators)]
+        else:      # input
+            min_input = max(0, (c - 1 - individual.n_back)*individual.n_rows + n_terminals)
+            max_input = max(0, (c - 1) * individual.n_rows - 1 + n_terminals)
+            in_ = list(range(min_input, max_input)) + list(range(n_terminals))
+            new_j = random_state.choice(in_)
+        new_gene[j] = new_j
+
+    else: # output gene
+        new_gene = random_state.randint(0, individual.n_columns*individual.n_rows + len(individual.inputs))
+    new_individual = copy.deepcopy(individual)
+    new_individual[i] = new_gene
+    return new_individual
+
+# class Cartesian(type):
+#     def __new__(mcs, name, primitive_set):
+#         print("new")
+#         import sys
+#         from inspect import getframeinfo, getmodulename, stack
+#         cls = super().__new__(mcs, name, (Base,), {"pset": primitive_set})
+#         caller = getframeinfo(stack()[1][0])         # find current_module by looking up caller in stack
+#         filename = getmodulename(caller.filename)
+#         try:
+#             current_module = [mod for mname, mod in sys.modules.items() if filename == mname.split('.')[-1]][0]
+#         except:
+#             current_module = sys.modules["__main__"]
+#         setattr(current_module, name, cls)
+#         return getattr(current_module, name)
+#
+#
+#     def __init__(cls, name, primitive_set):
+#         print("init")
+#         return super().__init__(name, (Base,), {"pset": primitive_set})
+
+
+def to_polish(c, return_args=True):
+    primitives = c.pset.mapping
+    used_arguments = set()
+
+    def h(g):
+        gene = make_it(c[g])
+        primitive = primitives[next(gene)]
+
+        if primitive.arity == 0:
+            if isinstance(primitive, (Constant, Terminal)):
+                used_arguments.add(primitive)
+            return primitive.name
+        else:
+            return "{}({})".format(primitive.name,
+                                   ", ".join(h(a) for a, _ in zip(gene, range(primitive.arity))))
+
+    polish = [h(o) for o in c.outputs]
+
+    if return_args:
+        return polish, used_arguments
+    else:
+        return polish
+
+
+def boilerplate(c, used_arguments=()):
+    mapping = c.pset.mapping
+    if used_arguments:
+        index = sorted([k for (k, v) in mapping.items() if v in used_arguments])
+        args = [mapping[i] for i in index]
+    else:
+        args = [mapping[i] for i in c.inputs]
+    args = [a for a in args if not isinstance(a, Constant)] + [a for a in args if isinstance(a, Constant)]
+    return "lambda {}:".format(", ".join(a.name for a in args))
+
+
+def compile(c):
+    polish, args = to_polish(c, return_args=True)
+    for t in c.pset.terminals:
+        if isinstance(t, Terminal):
+            args.add(t)
+    bp = boilerplate(c, used_arguments=args)
+    code = "({})".format(", ".join(polish)) if len(polish) > 1 else polish[0]
+    return eval(bp + code, c.pset.context)
