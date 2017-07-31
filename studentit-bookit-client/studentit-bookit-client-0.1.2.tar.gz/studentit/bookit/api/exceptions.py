@@ -1,0 +1,2 @@
+class BookITLoginFailedError(Exception):
+    pass
