@@ -1,0 +1,82 @@
+
+# Copyright (C) 2017 avideo authors (see AUTHORS)
+
+#
+#    This file is part of avideo.
+#
+#    avideo is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    avideo is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with avideo.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import unicode_literals
+
+from .common import InfoExtractor
+
+
+class SexuIE(InfoExtractor):
+    _VALID_URL = r'https?://(?:www\.)?sexu\.com/(?P<id>\d+)'
+    _TEST = {
+        'url': 'http://sexu.com/961791/',
+        'md5': 'ff615aca9691053c94f8f10d96cd7884',
+        'info_dict': {
+            'id': '961791',
+            'ext': 'mp4',
+            'title': 'md5:4d05a19a5fc049a63dbbaf05fb71d91b',
+            'description': 'md5:2b75327061310a3afb3fbd7d09e2e403',
+            'categories': list,  # NSFW
+            'thumbnail': r're:https?://.*\.jpg$',
+            'age_limit': 18,
+        }
+    }
+
+    def _real_extract(self, url):
+        video_id = self._match_id(url)
+        webpage = self._download_webpage(url, video_id)
+
+        jwvideo = self._parse_json(
+            self._search_regex(r'\.setup\(\s*({.+?})\s*\);', webpage, 'jwvideo'),
+            video_id)
+
+        sources = jwvideo['sources']
+
+        formats = [{
+            'url': source['file'].replace('\\', ''),
+            'format_id': source.get('label'),
+            'height': int(self._search_regex(
+                r'^(\d+)[pP]', source.get('label', ''), 'height',
+                default=None)),
+        } for source in sources if source.get('file')]
+        self._sort_formats(formats)
+
+        title = self._html_search_regex(
+            r'<title>([^<]+)\s*-\s*Sexu\.Com</title>', webpage, 'title')
+
+        description = self._html_search_meta(
+            'description', webpage, 'description')
+
+        thumbnail = jwvideo.get('image')
+
+        categories_str = self._html_search_meta(
+            'keywords', webpage, 'categories')
+        categories = (
+            None if categories_str is None
+            else categories_str.split(','))
+
+        return {
+            'id': video_id,
+            'title': title,
+            'description': description,
+            'thumbnail': thumbnail,
+            'categories': categories,
+            'formats': formats,
+            'age_limit': 18,
+        }
