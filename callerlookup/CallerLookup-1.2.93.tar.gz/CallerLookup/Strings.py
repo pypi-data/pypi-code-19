@@ -1,0 +1,127 @@
+# Author:       Scott Philip (sp@scottphilip.com)
+# Version:      1.2 (25 July 2017)
+# Source:       https://github.com/scottphilip/caller-lookup/
+# Licence:      GNU GENERAL PUBLIC LICENSE (Version 3, 29 June 2007)
+
+
+class CallerLookupConfigStrings:
+    CONFIG = "CONFIG"
+    NUMBER = "NUMBER"
+    REGION = "REGION"
+    REGION_DIAL_CODE = "REGION_DIAL_CODE"
+    DEFAULT = "DEFAULT"
+    GENERAL = "GENERAL"
+    ACCOUNT = "ACCOUNT"
+    PHANTOMJS_PATH = "PHANTOMJS_PATH"
+    IS_CACHE_ENABLED = "IS_CACHE_ENABLED"
+    IS_DEBUG = "IS_DEBUG"
+    SMTP_SERVER = "SMTP_SERVER"
+    ACCESS_TOKEN = "ACCESS_TOKEN"
+    ACCESS_TOKEN_EXPIRY = "ACCESS_TOKEN_EXPIRY"
+    USERNAME = "USERNAME"
+    PASSWORD = "PASSWORD"
+    SECRET = "SECRET"
+    IS_SAVE_CREDENTIALS = "IS_SAVE_CREDENTIALS"
+    REMOVE_ACCOUNT = "REMOVE_ACCOUNT"
+    SET_DEFAULT = "SET_DEFAULT"
+    CONFIG_DIR = "CONFIG_DIR"
+    DATA_DIR = "DATA_DIR"
+    LOG_DIR = "LOG_DIR"
+    REPORT = "REPORT"
+    IS_REPORT_ENABLED = "IS_REPORT_ENABLED"
+    REPORT_RECIPIENTS = "REPORT_RECIPIENTS"
+    REPORT_EMAIL_FROM = "REPORT_EMAIL_FROM"
+    LAST_UTC = "LAST_UTC"
+    NEXT_UTC = "NEXT_UTC"
+    SEND_MODE = "SEND_MODE"
+
+
+class CallerLookupReportMode:
+    EVERY_DAY = "EVERY_DAY"
+    EVERY_WEEKDAY = "EVERY_WEEKDAY"
+    WEEKLY = "WEEKLY"
+    MONTHLY = "MONTHLY"
+
+
+class CallerLookupLabel:
+    RESULT = "RESULT"
+    NUMBER = "NUMBER"
+    REGION = "REGION"
+    ADDRESS = "ADDRESS"
+    MESSAGE = "MESSAGE"
+    STACK = "STACK"
+    NAME = "NAME"
+    NUMBER_E164 = "NUMBER_E164"
+    NUMBER_NATIONAL = "NUMBER_NATIONAL"
+    REGION_DIAL_CODE = "REGION_DIAL_CODE"
+    SCORE = "SCORE"
+    TIME_TAKEN = "TIME_TAKEN"
+    COUNTRY_CODE = "COUNTRY_CODE"
+    IS_VALID = "IS_VALID"
+    COUNTRY_INT_DIAL_CODE = "COUNTRY_INT_DIAL_CODE"
+    SUCCESS = "SUCCESS"
+    INVALID_NUMBER = "INVALID_NUMBER"
+    ERROR = "ERROR"
+    UNKNOWN = "UNKNOWN"
+
+
+class CallerLookupErrors:
+    COUNTRY_NOT_FOUND = "COUNTRY_NOT_FOUND"
+    INVALID_COUNTRY_DATA = "INVALID_COUNTRY_DATA"
+    INVALID_RESPONSE_CODE = "INVALID_RESPONSE_CODE"
+    ACCESS_TOKEN_NOT_FOUND = "ACCESS_TOKEN_NOT_FOUND"
+
+
+class CallerLookupKeys(object):
+    APP_NAME = "CallerLookup"
+    URL_SEARCH = "http://www.truecaller.com/api/search?"
+    URL_TOKEN = "https://www.truecaller.com/api/auth/google?clientId=4"
+    OAUTH2_CLIENT_ID = "1051333251514-p0jdvav4228ebsu820jd3l3cqc7off2g.apps.googleusercontent.com"
+    OAUTH2_REDIRECT_URI = "https://www.truecaller.com/auth/google/callback"
+    OAUTH2_SCOPE = "https://www.googleapis.com/auth/userinfo.email " \
+                   "https://www.googleapis.com/auth/userinfo.profile " \
+                   "https://www.google.com/m8/feeds/"
+    GET_TOKEN_JAVASCRIPT = "localStorage.getItem('tcToken')"
+    KEY_TYPE = "type"
+    KEY_TYPE_VALUE = "4"
+    KEY_COUNTRY_CODE = "countryCode"
+    KEY_Q = "q"
+    KEY_DATA = "data"
+    KEY_SCORE = "score"
+    KEY_ADDRESSES = "addresses"
+    KEY_ADDRESS = "address"
+    KEY_PHONES = "phones"
+    KEY_E164_FORMAT = "e164format"
+    KEY_NATIONAL_FORMAT = "nationalFormat"
+    KEY_DIALLING_CODE = "diallingCode"
+    KEY_ACCESS_TOKEN = "accessToken"
+    KEY_NAME = "name"
+    HTTP_HEADER_CONTENT_ENCODING = "Content-Encoding"
+    HTTP_HEADER_CONTENT_TYPE = "content-type"
+    HTTP_HEADER_CONTENT_LENGTH = "content-length"
+    UTF8 = "utf-8"
+    HTTP_HEADER_APP_JSON = "application/json"
+    HTTP_HEADER_REFERER = "referer"
+    HTTP_HEADER_ORIGIN = "origin"
+    DATETIME_FMT = "%Y-%m-%d %H:%M:%S"
+    COOKIE_FILE_EXT = "cke"
+    PHANTOM_JS_LOG_FILE_NAME = "phantom-js.log"
+
+
+class CallerLookupArgParserHelp:
+    DESCRIPTION = "Caller Lookup - Reverse Caller ID"
+    NUMBER = "Phone number to lookup"
+    REGION = "Region the trunk belongs to (eg; GB, DE, US)"
+    REGION_DIAL_CODE = "Region Dial Code the trunk belongs to (eg; 44, 49, 1)"
+    PHANTOMJS_PATH = "Path to PhantomJS binary"
+    IS_CACHE_ENABLED = "Enabled result Cache"
+    IS_DEBUG = "Debug Mode"
+    USERNAME = "Google Account Username"
+    PASSWORD = "Google Account Password"
+    SECRET = "Google Account Secret (OTP secret where account has two step authentication enabled"
+    IS_SAVE_CREDENTIALS = "Save the credentials to the configuration"
+    REMOVE_ACCOUNT = "Remove account details from configuration"
+    SET_DEFAULT = "Set the default account to use"
+    CONFIG_DIR = "Configuration Directory Path"
+    DATA_DIR = "Data Directory Path"
+    LOG_DIR = "Log Directory Path"
