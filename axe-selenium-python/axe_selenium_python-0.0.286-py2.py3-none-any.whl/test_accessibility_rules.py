@@ -1,0 +1,123 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at http://mozilla.org/MPL/2.0/.
+
+import pytest
+# import unittest
+
+
+def report(rule):
+    # return json.dumps(rule, indent=4, sort_keys=True)
+    string = '\n\n\nRule Violated:\n' + rule['id'] + ' - ' + rule['description'] + \
+        '\n\tURL: ' + rule['helpUrl'] + \
+        '\n\tImpact Level: ' + rule['impact'] + \
+        '\n\tTags:'
+    for tag in rule['tags']:
+        string += ' ' + tag
+    string += '\n\tElements Affected:'
+    i = 1
+    for node in rule['nodes']:
+        for target in node['target']:
+            string += '\n\t' + str(i) + ') Target: ' + target
+            i += 1
+        for item in node['all']:
+            string += '\n\t\t' + item['message']
+        for item in node['any']:
+            string += '\n\t\t' + item['message']
+        for item in node['none']:
+            string += '\n\t\t' + item['message']
+    string += '\n\n\n'
+    return string
+
+# def make_test_case(data, rule, docstring):
+#     def test_accessibility_rule(self):
+#         self.assertTrue rule not in data['violations'], report(data['violations'][rule])
+#     clsdict = {
+#                 'test_accessibility_rule': test_accessibility_rule,
+#                 '__doc__': docstring
+#               }
+#     return type('ATest', (unittest.TestCase,), clsdict)
+
+
+class TestAccessibility:
+
+    # Acessibility Rule IDs used to generate a test for each rule
+    # https://github.com/dequelabs/axe-core/blob/master/doc/rule-descriptions.md
+    _rules = [
+        'accesskeys',
+        'area-alt',
+        'aria-allowed-attr',
+        'aria-hidden-body',
+        'aria-required-attr',
+        'aria-required-children',
+        'aria-required-parent',
+        'aria-roles',
+        'aria-valid-attr-value',
+        'aria-valid-attr',
+        'audio-caption',
+        'blink',
+        'button-name',
+        'bypass',
+        'checkboxgroup',
+        'color-contrast',
+        'definition-list',
+        'dlitem',
+        'document-title',
+        'duplicate-id',
+        'empty-heading',
+        'frame-title-unique',
+        'frame-title',
+        'heading-order',
+        'hidden-content',
+        'href-no-hash',
+        'html-has-lang',
+        'html-lang-valid',
+        'image-alt',
+        'image-redundant-alt',
+        'input-image-alt',
+        'label-title-only',
+        'label',
+        'layout-table',
+        'link-in-text-block',
+        'link-name',
+        'list',
+        'listitem',
+        'marquee',
+        'meta-refresh',
+        'meta-viewport-large',
+        'meta-viewport',
+        'object-alt',
+        'p-as-heading',
+        'radiogroup',
+        'region',
+        'scope-attr-valid',
+        'server-side-image-map',
+        'skip-link',
+        'tabindex',
+        'table-duplicate-name',
+        'table-fake-caption',
+        'td-has-header',
+        'td-headers-attr',
+        'th-has-data-cells',
+        'valid-lang',
+        'video-caption',
+        'video-description'
+    ]
+
+    @pytest.mark.nondestructive
+    def test_execute(self, axe, pytestconfig):
+        """Run axe against base_url and verify JSON output."""
+
+        data = axe.execute()
+
+        # convert array to dictionary
+        pytestconfig.violations = dict((k['id'], k) for k in data['violations'])
+        # assert data exists
+        assert data is not None, data
+
+    @pytest.mark.parametrize("rule", _rules)
+    @pytest.mark.nondestructive
+    def test_accessibility_rules(self, pytestconfig, rule):
+        if(rule in pytestconfig.violations):
+            TestAccessibility.test_accessibility_rules.__func__.__doc__ = pytestconfig.violations[rule]['help']
+        assert rule not in pytestconfig.violations, report(pytestconfig.violations[rule])
