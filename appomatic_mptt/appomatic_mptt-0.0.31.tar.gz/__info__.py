@@ -1,0 +1,10 @@
+version = "0.0.31"
+author = "RedHog (Egil Moeller)"
+author_email = "egil.moller@freecode.no"
+license = "GPL"
+url = "http://github.com/redhog/appomatic"
+name = "appomatic_mptt"
+description = "Utilities for implementing Modified Preorder Tree Traversal with your Django Models."
+keywords = "appomatic django-mptt"
+url = "https://github.com/django-mptt/django-mptt/"
+install_requires = []
