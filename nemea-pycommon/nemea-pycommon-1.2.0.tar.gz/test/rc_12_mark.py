@@ -1,0 +1,50 @@
+import unittest
+import os
+import json
+
+#import logging
+#FORMAT="%(asctime)s %(module)s:%(filename)s:%(lineno)d:%(message)s"
+#logging.basicConfig(level=0, format=FORMAT)
+#
+#logger = logging.getLogger(__name__)
+
+
+from reporter_config.Config import Config
+
+
+class RCMarkTest(unittest.TestCase):
+    def setUp(self):
+        """
+        Example message created by a conv function in a reporter
+        """
+        with open(os.path.dirname(__file__) + '/rc_msg.json', 'r') as f:
+            self.msg = json.load(f)
+
+    def tearDown(self):
+        pass
+
+    def test_01_mark_simple(self):
+        """
+        Load mark.yaml configuration file, parse it and analyze it
+
+        This shouldn't rise any exceptions
+        """
+        self.config = Config(os.path.dirname(__file__) + '/rc_config/mark.yaml');
+
+        self.assertNotEqual(self.config, None)
+        self.config.match(self.msg)
+
+        of1 = "/tmp/output1.idea"
+        of2 = "/tmp/output2.idea"
+
+        with open(of1, "r") as f:
+            stored = json.load(f)
+        self.assertEqual(stored['Test'], True)
+
+        with open(of2, "r") as f:
+            stored = json.load(f)
+        self.assertEqual(stored["_CESNET"]["Status"]["Processed"], True)
+
+        os.unlink(of1)
+        os.unlink(of2)
+
