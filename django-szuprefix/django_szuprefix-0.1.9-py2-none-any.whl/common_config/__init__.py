@@ -1,0 +1,1 @@
+default_app_config = 'django_szuprefix.common_config.apps.CommonConfigConfig'
