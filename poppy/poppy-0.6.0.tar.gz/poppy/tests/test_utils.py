@@ -1,0 +1,182 @@
+import warnings
+import numpy as np
+import astropy.io.fits as fits
+import pytest
+
+try:
+    import pyfftw
+except ImportError:
+    pyfftw = None
+
+from .. import utils
+from .. import poppy_core
+import poppy
+import scipy
+
+def test_padToSize():
+    square = np.ones((300,300))
+
+    for desiredshape in [ (500, 500), (400,632), (2048, 312)]:
+        newshape = utils.pad_to_size(square, desiredshape).shape
+        for i in [0,1]: assert newshape[i] == desiredshape[i]
+
+
+
+# Utility function used in test_measure_FWHM
+def makeGaussian(size, fwhm = 3, center=None):
+    """ Make a square gaussian kernel.
+
+    size is the length of a side of the square
+    fwhm is full-width-half-maximum, which
+    can be thought of as an effective radius.
+
+    From https://gist.github.com/andrewgiessel/4635563
+    As variously modified by marshall
+    """
+
+    x = np.arange(0, size, 1, float)
+    y = x[:,np.newaxis]
+
+    if center is None:
+        x0 = y0 = (size-1)*.5
+    else:
+        x0 = center[0]
+        y0 = center[1]
+
+    return np.exp(-4*np.log(2) * ((x-x0)**2 + (y-y0)**2) / fwhm**2)
+
+def test_radial_profile(plot=False):
+    """ Test radial profile calculation, including circular and square apertures,
+    and including with the pa_range option.
+    """
+
+    ### Tests on a circular aperture
+
+    o = poppy_core.OpticalSystem()
+    o.add_pupil(poppy.CircularAperture(radius=1.0))
+    o.add_detector(0.010, fov_pixels=512)
+    psf = o.calc_psf()
+
+    rad, prof = poppy.radial_profile(psf)
+    rad2, prof2 = poppy.radial_profile(psf, pa_range=[-20,20])
+    rad3, prof3 = poppy.radial_profile(psf, pa_range=[-20+90, 20+90])
+
+
+    # Compute analytical Airy function, on exact same radial sampling as that profile.
+    v = np.pi*  rad*poppy.misc._ARCSECtoRAD * 2.0/1e-06
+    airy = ((2*scipy.special.jn(1, v))/v)**2
+    r0 = 33 # 0.33 arcsec ~ first airy ring in this case.
+    airy_peak_envelope = airy[r0]*prof.max() / (rad/rad[r0])**3
+
+    absdiff =  np.abs(prof - airy*prof.max())
+
+    if plot:
+        import matplotlib.pyplot as plt
+        plt.figure(figsize=(12,6))
+        plt.subplot(1,2,1)
+        poppy.display_psf(psf, colorbar_orientation='horizontal', title='Circular Aperture, d=2 m')
+
+        plt.subplot(1,2,2)
+        plt.semilogy(rad,prof)
+        plt.semilogy(rad2,prof2, ls='--', color='red')
+        plt.semilogy(rad3,prof3, ls=':', color='cyan')
+        plt.semilogy(rad, airy_peak_envelope, color='gray')
+        plt.semilogy(rad, airy_peak_envelope/50, color='gray', alpha=0.5)
+
+
+        plt.semilogy(rad, absdiff, color='purple')
+
+    # Test the radial profile is close to the analytical Airy function.
+    # It's hard to define relative fractional closeness for comparisons to
+    # a function with many zero crossings; we can't just take (f1-f2)/(f1+f2)
+    # This is a bit of a hack but let's test that the difference between
+    # numerical and analytical is always less than 1/50th of the peaks of the
+    # Airy function (fit based on the 1/r^3 power law fall off)
+
+    assert np.all( absdiff[0:300] < airy_peak_envelope[0:300]/50)
+
+    # Test that the partial radial profiles agree with the full one. This test is
+    # a little tricky since the sampling in r may not agree exactly.
+    # TODO write test comparison here
+
+    # Let's also test that the partial radial profiles on 90 degrees agree with each other.
+    # These should match to machine precision.
+    assert np.allclose(prof2, prof3)
+
+    ### Next test is on a square aperture
+    o = poppy.OpticalSystem()
+    o.add_pupil(poppy.SquareAperture())
+    o.add_detector(0.010, fov_pixels=512)
+    psf = o.calc_psf()
+    rad, prof = poppy.radial_profile(psf)
+    rad2, prof2 = poppy.radial_profile(psf, pa_range=[-20,20])
+    rad3, prof3 = poppy.radial_profile(psf, pa_range=[-20+90, 20+90])
+
+
+    if plot:
+        plt.figure(figsize=(12,6))
+        plt.subplot(1,2,1)
+        poppy.display_psf(psf, colorbar_orientation='horizontal', title='Square Aperture, size=1 m')
+
+        plt.subplot(1,2,2)
+        plt.semilogy(rad,prof)
+        plt.semilogy(rad2,prof2, ls='--', color='red')
+        plt.semilogy(rad3,prof3, ls=':', color='cyan')
+
+    assert np.allclose(prof2, prof3)
+    # TODO compare those to be near a sinc profile as expected?
+
+def test_measure_FWHM(display=False):
+    """ Test the utils.measure_FWHM function
+
+    Current implementation can be off by a
+    couple percent for small FWHMs that are only
+    marginally well sampled by the array pixels, so
+    the allowed tolerance for measured_fwhm = input_fwhm
+    is that it's allowed to be off by a couple percent.
+
+    """
+
+    desired = (3, 4.5, 5, 8, 12)
+    tolerance= (0.07, 0.03, 0.02, 0.02, 0.02)
+
+    for des, tol in zip(desired, tolerance):
+
+
+        desired_fwhm = des #4.0 # pixels
+        pxscl = 0.010
+
+        center=(24.5,26.25)
+        ar = makeGaussian(50, fwhm=desired_fwhm, center=center)
+
+        testfits = fits.HDUList(fits.PrimaryHDU(ar))
+        testfits[0].header['PIXELSCL'] = pxscl
+
+        meas_fwhm = utils.measure_fwhm(testfits, center=center)
+        print("Measured FWHM: {0:.4f} arcsec, {1:.4f} pixels ".format(meas_fwhm, meas_fwhm/pxscl))
+
+        reldiff =  np.abs((meas_fwhm/pxscl) - desired_fwhm ) / desired_fwhm
+        print("Desired: {0:.4f}. Relative difference: {1:.4f}    Tolerance: {2:.4f}".format(desired_fwhm, reldiff, tol))
+        assert( reldiff < tol )
+
+@pytest.mark.skipif(pyfftw is None, reason="pyFFTW not found")
+def test_load_save_fftw_wisdom(tmpdir):
+    with tmpdir.as_cwd():
+        utils.fftw_save_wisdom('./wisdom.json')
+    assert tmpdir.join('wisdom.json').exists()
+    with tmpdir.as_cwd():
+        utils.fftw_load_wisdom('./wisdom.json')
+    assert utils._loaded_fftw_wisdom is True
+
+@pytest.mark.skipif(pyfftw is None, reason="pyFFTW not found")
+def test_load_corrupt_fftw_wisdom(tmpdir):
+    utils._loaded_fftw_wisdom = False
+    with tmpdir.as_cwd():
+        with open('./wisdom.json', 'w') as f:
+            f.write('''{"longdouble": "(fftw-3.3.4 fftwl_wisdom #x0821b5c7 #xa4c07d5a #x21b58211 #xebe513ab\\n)\\n", "single": "(fftw-3.3.4 fftwf_wisdom #xa84d9475 #xdb220970 #x4aa6f1c4 #xf3163254\\n)\\n", "_FFTW_INIT":''')
+        assert tmpdir.join('wisdom.json').exists()
+        with warnings.catch_warnings(record=True) as w:
+            utils.fftw_load_wisdom('./wisdom.json')
+            assert len(w) == 1
+            assert issubclass(w[-1].category, utils.FFTWWisdomWarning)
+    assert utils._loaded_fftw_wisdom is False
