@@ -1,0 +1,35 @@
+from setuptools import setup
+
+setup(
+    name='pycbox',
+    version='0.0.1',
+    description='Web interface for directory listings and picture gallery',
+    long_description=None,
+    author='Thomas Gläßle',
+    author_email='thomas@coldfix.de',
+    url='https://github.com/coldfix/pycbox',
+    license='Unlicense',
+    py_modules=['pycbox'],
+    install_requires=[
+        'docopt',
+        'flask',
+        'Pillow',
+        'PyYAML',
+    ],
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Environment :: Web Environment',
+        'Framework :: Flask',
+        'Intended Audience :: End Users/Desktop',
+        'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
+        'Natural Language :: English',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Topic :: Communications :: File Sharing',
+    ],
+)
