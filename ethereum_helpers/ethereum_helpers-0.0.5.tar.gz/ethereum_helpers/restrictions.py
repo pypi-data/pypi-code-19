@@ -1,0 +1,2 @@
+R_LENGTH = 64
+S_LENGTH = 64
