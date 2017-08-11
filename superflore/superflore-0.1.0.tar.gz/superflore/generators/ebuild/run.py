@@ -1,0 +1,205 @@
+#!/usr/bin/python
+# Copyright 2017 Open Source Robotics Foundation, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+from superflore.generators.ebuild.gen_packages import generate_installers
+from superflore.generators.ebuild.overlay_instance import RosOverlay
+from superflore.repo_instance import RepoInstance
+import argparse
+import shutil
+import time
+import sys
+import os
+
+# Modify if a new distro is added
+active_distros = ['indigo', 'kinetic', 'lunar']
+# just update packages, by default.
+preserve_existing = True
+overlay = None
+
+
+def clean_up(distro, preserve_repo=False):
+    global overlay
+    if not preserve_repo:
+        clean_msg = \
+            'Cleaning up tmp directory {0}...'.format(overlay.repo.repo_dir)
+        RepoInstance.info(clean_msg)
+        shutil.rmtree(overlay.repo.repo_dir)
+    if os.path.exists('.pr-message.tmp'):
+        os.remove('.pr-message.tmp')
+    if os.path.exists('.pr-title.tmp'):
+        os.remove('.pr-title.tmp')
+
+
+def file_pr(overlay, delta, missing_deps):
+    try:
+        overlay.pull_request('{0}\n{1}'.format(delta, missing_deps))
+    except Exception as e:
+        overlay.error('Failed to file PR with ros/ros-overlay repo!')
+        overlay.error('Exception: {0}'.format(e))
+        sys.exit(1)
+
+
+def main():
+    global overlay
+    global preserve_existing
+
+    parser = argparse.ArgumentParser('Deploy ROS packages into Gentoo Linux')
+    parser.add_argument(
+        '--ros-distro',
+        help='regenerate packages for the specified distro',
+        type=str
+    )
+    parser.add_argument(
+        '--all',
+        help='regenerate all packages in all distros',
+        action="store_true"
+    )
+    parser.add_argument(
+        '--dry-run',
+        help='run without filing a PR to remote',
+        action="store_true"
+    )
+    parser.add_argument(
+        '--pr-only',
+        help='ONLY file a PR to remote',
+        action='store_true'
+    )
+    parser.add_argument(
+        '--output-repository-path',
+        help='location of the Git repo',
+        type=str
+    )
+
+    args = parser.parse_args(sys.argv[1:])
+
+    if args.all:
+        RepoInstance.warn('"All" mode detected... This may take a while!')
+        preserve_existing = False
+    elif args.ros_distro:
+        selected_targets = [args.ros_distro]
+        preserve_existing = False
+    elif args.dry_run and args.pr_only:
+        RepoInstance.error('Invalid args! cannot dry-run and file PR')
+        sys.exit(1)
+    elif args.pr_only and not args.output_repository_path:
+        RepoInstance.error('Invalid args! no repository specified')
+    elif args.pr_only:
+        try:
+            with open('.pr-message.tmp', 'r') as msg_file:
+                msg = msg_file.read().rstrip('\n')
+            with open('.pr-title.tmp', 'r') as title_file:
+                title = title_file.read().rstrip('\n')
+        except:
+            RepoInstance.error('Failed to open PR title/message file!')
+            RepoInstance.RepoInstance.error(
+                'Please supply the %s and %s files' % (
+                    '.pr_message.tmp',
+                    '.pr_title.tmp'
+                )
+            )
+            sys.exit(1)
+        try:
+            prev_overlay = RepoInstance(args.output_repository_path)
+            RepoInstance.info('PR message:\n"%s"\n' % msg)
+            RepoInstance.info('PR title:\n"%s"\n' % title)
+            prev_overlay.pull_request(msg, title)
+            clean_up('all')
+            sys.exit(0)
+        except Exception as e:
+            RepoInstance.error('Failed to file PR!')
+            RepoInstance.error('reason: {0}'.format(e))
+            sys.exit(1)
+    # clone current repo
+    overlay = RosOverlay(args.output_repository_path)
+    selected_targets = active_distros
+    # generate installers
+    total_installers = dict()
+    total_broken = set()
+    total_changes = dict()
+
+    for distro in selected_targets:
+        distro_installers, distro_broken, distro_changes =\
+            generate_installers(distro, overlay, preserve_existing)
+        for key in distro_broken.keys():
+            for pkg in distro_broken[key]:
+                total_broken.add(pkg)
+
+        total_changes[distro] = distro_changes
+        total_installers[distro] = distro_installers
+
+    num_changes = 0
+    for distro_name in total_changes:
+        num_changes += len(total_changes[distro_name])
+
+    if num_changes == 0:
+        RepoInstance.info('ROS distro is up to date.')
+        RepoInstance.info('Exiting...')
+        clean_up(args.ros_distro)
+        sys.exit(0)
+
+    # remove duplicates
+    inst_list = total_broken
+
+    delta = "Changes:\n"
+    delta += "========\n"
+
+    if 'indigo' in total_changes and len(total_changes['indigo']) > 0:
+        delta += "Indigo Changes:\n"
+        delta += "---------------\n"
+
+        for d in sorted(total_changes['indigo']):
+            delta += '* {0}\n'.format(d)
+        delta += "\n"
+
+    if 'kinetic' in total_changes and len(total_changes['kinetic']) > 0:
+        delta += "Kinetic Changes:\n"
+        delta += "----------------\n"
+
+        for d in sorted(total_changes['kinetic']):
+            delta += '* {0}\n'.format(d)
+        delta += "\n"
+
+    if 'lunar' in total_changes and len(total_changes['lunar']) > 0:
+        delta += "Lunar Changes:\n"
+        delta += "--------------\n"
+
+        for d in sorted(total_changes['lunar']):
+            delta += '* {0}\n'.format(d)
+        delta += "\n"
+
+    missing_deps = ''
+
+    if len(inst_list) > 0:
+        missing_deps = "Missing Dependencies:\n"
+        missing_deps += "=====================\n"
+        for pkg in sorted(inst_list):
+            missing_deps += " * [ ] {0}\n".format(pkg)
+
+    # Commit changes and file pull request
+    overlay.regenerate_manifests(args.ros_distro)
+    overlay.commit_changes(args.ros_distro)
+
+    if args.dry_run:
+        RepoInstance.info('Running in dry mode, not filing PR')
+        title_file = open('.pr-title.tmp', 'w')
+        title_file.write('rosdistro sync, {0}\n'.format(time.ctime()))
+        pr_message_file = open('.pr-message.tmp', 'w')
+        pr_message_file.write('%s\n%s\n' % (delta, missing_deps))
+        sys.exit(0)
+    file_pr(overlay, delta, missing_deps)
+
+    clean_up(args.ros_distro, args.output_repository_path)
+    RepoInstance.happy('Successfully synchronized repositories!')
