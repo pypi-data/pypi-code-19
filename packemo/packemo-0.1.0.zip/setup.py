@@ -1,0 +1,97 @@
+from distutils.core import setup
+
+# You can use `python setup.py install --record ./record.txt` to know which
+# files are created and where they are, and can use the MANIFEST file to see
+# which files in the source are used to install the package.
+# And to remove them thoroughly, you can use `cat files.txt | xargs rm -rf`.
+# (on Windows?)
+setup(
+    # Actually the name here is NOT the package name which is imported into 
+    # Python files. But if pip is used, this name needs to be told to pip.
+    name="packemo",
+    version="0.1.0",
+
+    author="psrit",
+    author_email="xiaojx13@outlook.com",
+
+    classifiers=[
+        "Environment :: Console",
+        "License :: OSI Approved :: Apache Software License",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Education",
+        "Natural Language :: Chinese (Simplified)",
+        "Operating System :: Microsoft :: Windows",
+        "Operating System :: Unix",
+        "Programming Language :: Python",
+        "Topic :: Education",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+    ],
+
+    # -------------------------------------------------------------------------
+    # All the packages listed here will be in the "root" package if they are
+    # installed by `python setup.py install`.
+    # (Every directory listed in `sys.path` contributes modules to the root 
+    # package, e.g. `D:\Anaconda3\envs\pkg_demo\Lib\site-packages\`)
+    # To use the packages, just import the names listed below (not the `name`
+    # field of setup()).
+    # -------------------------------------------------------------------------
+    packages=[
+        "packagedemo",
+        "packagedemo.subpackage1",
+        "packagedemo.subpackage1.subsubpackage11",
+        "packagedemo.subpackage2"
+    ],
+
+    # -------------------------------------------------------------------------
+    # The keys are package names, and the values are directory names relative 
+    # to the DISTRIBUTION ROOT. If the key being empty (i.e. ""), the directory
+    # represented by the corresponding value will be put directly into the 
+    # "root" package.
+    # -------------------------------------------------------------------------
+    package_dir={"packagedemo": "src"},
+
+    # -------------------------------------------------------------------------
+    # NOTE: the following settings are also OK, but the structure of the
+    # resulting package will be different, like
+    #     packagedemo
+    #        |
+    #        +-- subpackage1
+    #        +-- subsubpackage11
+    #        +-- subpackage2
+    # which means that `subsubpackage11` must be refered to through 
+    # `packagedemo.subsubpackage11` instead of 
+    # `packagedemo.subpackage1.subsubpackage11` (therefore src/app.py must be
+    # modified).
+    # See installation record for some details.
+    # -------------------------------------------------------------------------
+    # packages=[
+    #     "packagedemo",
+    #     "packagedemo.subpackage1",
+    #     "packagedemo.subsubpackage11",
+    #     "packagedemo.subpackage2"
+    # ],
+    # package_dir={
+    #     "packagedemo": "src",
+    #     "packagedemo.subsubpackage11": "src/subpackage1/subsubpackage11"
+    # },
+
+    package_data={
+        # "": ["data/*"], # WON'T WORK
+        "packagedemo": ["package_data/*"],
+        "packagedemo.subpackage1": ["subpackage1_data/*"],
+        "packagedemo.subpackage1.subsubpackage11": ["subsubpackage11_data/*"],
+        "packagedemo.subpackage2": ["subpackage2_data/*"],
+    },
+    # data_files=[]
+
+    # -------------------------------------------------------------------------
+    # All scripts listed here will be in the Python's Script directory,
+    # e.g. `D:\Anaconda3\envs\pkg_demo\Scripts\` for an environment called 
+    # pkg_demo of Anaconda. Therefore these scripts can be used directly from 
+    # the terminal.
+    # -------------------------------------------------------------------------
+    scripts=[
+        # "src/app.py",
+        "scripts/packemo_test.py",
+    ],
+)
