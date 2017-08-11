@@ -1,0 +1,22 @@
+from distutils.core import setup
+
+setup( name='pcreode',
+       version='0.10',
+       description='p-Creode algorithm for mapping state transitions',
+       url='https://github.com/herrinca/pCreode',
+       author='Chuck Herring',
+       author_email='charles.a.herring@Vanderbilt.edu',
+       license='MIT',
+       packages=['pcreode'],
+       install_requires=[
+           'numpy>=1.11.0',
+           'pandas>=0.17.1',
+           'pyrex>=9.4.0',
+           'tsne>=0.1.7',
+           'matplotlib',
+           'sklearn',
+           'igraph',
+           'jupyter',
+       ],
+     )
+
