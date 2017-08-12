@@ -1,0 +1,27 @@
+import logging
+
+from fusesoc.provider.provider import Provider
+from fusesoc.utils import Launcher
+
+logger = logging.getLogger(__name__)
+
+REPO_PATH = 'http://opencores.org/ocsvn/{}/{}/{}'
+
+class Opencores(Provider):
+
+    def _checkout(self, local_dir):
+        repo_name = self.config.get('repo_name')
+        repo_path = REPO_PATH.format(repo_name,
+                                     repo_name,
+                                     self.config.get('repo_root'))
+        revision_number  = self.config.get('revision')
+        logger.info("Downloading " + repo_name + " from OpenCores")
+
+        Launcher('svn', ['co', '-q', '--no-auth-cache',
+                         '-r', revision_number,
+                         '--username', 'orpsoc',
+                         '--password', 'orpsoc',
+                         repo_path,
+                         local_dir]).run()
+
+PROVIDER_CLASS = Opencores
