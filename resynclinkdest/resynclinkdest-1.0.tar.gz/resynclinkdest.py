@@ -1,0 +1,199 @@
+#!/usr/bin/env python
+# This file is part of resynclinkdest.
+#
+# resynclinkdest is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# resynclinkdest is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with resynclinkdest.  If not, see <http://www.gnu.org/licenses/>.
+"""
+hardlink-inspired file deduplication tool
+
+Compared to hardlink, this tool only compares files which have the same
+subpath inside given heads. This allows reducing memory requirements, in turn
+allowing to run on much larger file trees.
+
+As such, it is intended to be used with rsync-populated file trees:
+  rsync --link-dest="<destN>" "<source>" "<destN+1>"
+This tool can relink all <dest*> content, including linking N+2 to N even if
+N+1 is different from both.
+"""
+from __future__ import print_function
+import argparse
+import collections
+import hashlib
+import itertools
+import os
+import sys
+import time
+from xattr import listxattr
+
+HASH_CHUNK_SIZE = 1024 * 1024
+class FileCompare(object):
+    __slots__ = ('path', 'device', 'inode', 'link_count', 'stat', '_xattr', '_hash')
+
+    def __init__(self, path, stat):
+        self.path = path
+        self.device = stat.st_dev
+        self.inode = stat.st_ino
+        self.link_count = stat.st_nlink
+        self.stat = (
+            stat.st_size,
+            stat.st_mtime,
+            stat.st_mode,
+        )
+        self._xattr = None
+        self._hash = None
+
+
+    @property
+    def xattr(self):
+        xattr = self._xattr
+        if xattr is None:
+            self._xattr = xattr = listxattr(self.path, symlink=True)
+        return xattr
+
+    @property
+    def hash(self):
+        hash_value = self._hash
+        if hash_value is None:
+            with open(self.path) as my_file:
+                hash_list = (
+                    hashlib.sha1(),
+                    hashlib.md5(),
+                )
+                while True:
+                    chunk = my_file.read(HASH_CHUNK_SIZE)
+                    if not chunk:
+                        break
+                    for hash_obj in hash_list:
+                        hash_obj.update(chunk)
+            self._hash = hash_value = tuple([x.digest() for x in hash_list])
+        return hash_value
+
+    def __eq__(self, other):
+        return (
+            self.stat == other.stat and
+            self.xattr == other.xattr and
+            self.hash == other.hash
+        )
+
+class BlackHoleSet(object):
+    @staticmethod
+    def add(_):
+        pass
+
+    @staticmethod
+    def __contains__(_):
+        return False
+
+def main():
+    parser = argparse.ArgumentParser(
+        'Re-hardlink identical files which reside at identical subpaths under '
+        'given HEAD directories.'
+    )
+    parser.add_argument(
+        'head_list',
+        metavar='HEAD',
+        nargs='+',
+        help='Top-level directories.',
+    )
+    parser.add_argument(
+        '--do',
+        action='store_true',
+        help='Actually do relink files. By default, actions are printed but '
+        'no file is actually modified.'
+    )
+    parser.add_argument(
+        '--constant-memory',
+        action='store_true',
+        help='Forget which paths were checked, making memory use globally '
+        'constant, trading memory for many more syscalls (slow !)',
+    )
+    args = parser.parse_args()
+    if args.do:
+        unlink = os.unlink
+        link = os.link
+    else:
+        print('Dry-run mode, not touching files. See "--do".')
+        unlink = link = lambda *args, **kw: None
+    if args.constant_memory:
+        known_headless_path_set = BlackHoleSet()
+    else:
+        known_headless_path_set = set()
+    gain = 0
+    try:
+        for head_index, current_head in enumerate(args.head_list[:-1]):
+            head_list = args.head_list[head_index:]
+            print(current_head)
+            found = False
+            for root, _, file_name_list in os.walk(current_head):
+                current_headless_root = os.path.relpath(root, current_head)
+                for file_name in file_name_list:
+                    current_headless_file_path = os.path.join(current_headless_root, file_name)
+                    if current_headless_file_path in known_headless_path_set:
+                        continue
+                    known_headless_path_set.add(current_headless_file_path)
+                    inode_head_list_dict = {}
+                    for head in head_list:
+                        full_path = os.path.join(head, current_headless_file_path)
+                        try:
+                            stat = os.lstat(full_path)
+                        except OSError:
+                            continue
+                        key = stat.st_ino
+                        try:
+                            inode_head_list = inode_head_list_dict[key][1]
+                        except KeyError:
+                            inode_head_list_dict[key] = (
+                                FileCompare(full_path, stat),
+                                [head],
+                            )
+                        else:
+                            inode_head_list.append(head)
+                    inode_head_list_list = inode_head_list_dict.values()
+                    for inode_index, (my_file_compare, my_head_list) in enumerate(inode_head_list_list, 1):
+                        if not my_head_list:
+                            continue
+                        my_path = my_file_compare.path
+                        need_print = True
+                        for other_file_compare, other_head_list in inode_head_list_list[inode_index:]:
+                            if not other_head_list:
+                                continue
+                            if my_file_compare == other_file_compare:
+                                if need_print:
+                                    print(' ', my_path, '<-', end=' ')
+                                    need_print = False
+                                gain += other_file_compare.stat[0]
+                                found = True
+                                for other_head in other_head_list:
+                                    print(other_head, end=' ')
+                                    sys.stdout.flush()
+                                    other_path = os.path.join(other_head, current_headless_file_path)
+                                    try:
+                                        unlink(other_path)
+                                        link(my_path, other_path)
+                                    except:
+                                        print('Exception while (un)linking', repr(other_path), 'trying to finish before exiting')
+                                        if not os.path.lexist(other_path):
+                                            link(my_path, other_path)
+                                        raise
+                                del other_head_list[:]
+                        if not need_print:
+                            print()
+            if found:
+                print()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        print('Gain:', gain)
+
+if __name__ == '__main__':
+    main()
