@@ -1,0 +1,3 @@
+import logserver
+
+logserver.main()
