@@ -1,0 +1,14 @@
+from distutils.core import setup
+setup(
+  name = 'seussexport',
+  packages = ['seussexport'],
+  version = '0.2',
+  install_requires=['requests'],
+  description = 'SEU Export From Statseeker',
+  author = 'Chris Jones',
+  author_email = 'ipv6freely@gmail.com',
+  url = 'https://github.com/ipv6freely/seussexport',
+  download_url = 'https://github.com/ipv6freely/seussexport/archive/0.2.tar.gz',
+  keywords = ['statseeker', 'export'], # arbitrary keywords
+  classifiers = [],
+)
