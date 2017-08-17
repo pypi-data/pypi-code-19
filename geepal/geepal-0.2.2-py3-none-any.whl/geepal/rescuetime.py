@@ -1,0 +1,1 @@
+"https://www.rescuetime.com/anapi/data?key=B63VdzBGpcNs4_jXAU18zq2uPeCC4dQRqn4An7U5&format=json&rb=2017-07-24&re=2017-07-24&perspective=interval&resolution_time=minute"
