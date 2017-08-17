@@ -1,0 +1,32 @@
+# -*- coding: utf-8 -*-
+# Copyright (c) 2016 Sqreen. All Rights Reserved.
+# Please refer to our terms for more information: https://www.sqreen.io/terms.html
+""" Module called when sitecustomize is automatically imported by python
+"""
+import imp
+import sys
+from sqreen import start
+import os.path
+
+LOADING = True
+
+# Try to import other sitecustomize files in the path
+
+current_directory = os.path.dirname(__file__)
+
+# Remove ourselves from sys.path avoiding an import loop
+if current_directory in sys.path:
+    sys.path.remove(current_directory)
+
+try:
+    (file, pathname, description) = imp.find_module('sitecustomize', sys.path)
+except ImportError:
+    # There can no other sitecustomize
+    pass
+else:
+    imp.load_module('sitecustomize', file, pathname, description)
+
+
+# Try to detect when this module is imported as sitecustomize
+if not hasattr(sys, 'argv'):
+    start()
