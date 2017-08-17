@@ -1,0 +1,24 @@
+# dynamo defines
+S = 'S'
+B = 'B'
+BOOL = 'BOOL'
+BS = 'BS'
+L = 'L'
+N = 'N'
+NS = 'NS'
+HASH = 'HASH'
+RANGE = 'RANGE'
+NULL = 'NULL'
+SS = 'SS'
+M = 'M'
+
+# usage defines
+STRING = S
+BINARY = B
+BOOLEAN = BOOL
+BINARY_SET = BS
+LIST = L
+NUMBER = N
+NUMBER_SET = NS
+STRING_SET = SS
+MAP = M
