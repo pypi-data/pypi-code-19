@@ -1,0 +1,162 @@
+#!/usr/bin/env python
+################################################################################
+#    Copyright 2015 Brecht Baeten
+#    This file is part of mpcpy.
+#
+#    mpcpy is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    mpcpy is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with mpcpy.  If not, see <http://www.gnu.org/licenses/>.
+################################################################################
+
+import sys
+import numpy as np
+
+class MPC(object):
+
+    def __init__(self,emulator,control,boundaryconditions,emulationtime=7*24*3600,resulttimestep=600,nextstepcalculator=None,plotfunction=None):
+        """
+        initialize an MPC object
+        
+        Parameters
+        ----------
+        emulator : mpcpy.Emulator
+            the emulator object to be used
+            
+        control : mpcpy.Control
+            the control object to be used
+            
+        boundaryconditions : mpcpy.Boundaryconditions
+            the boundaryconditions object to be used
+        
+        emulationtime : number
+            the total time of the simulation
+            
+        resulttimestep : number
+            the timestep for which the results are returned
+            
+        nextstepcalculator : function
+            function returning an integer representing the number of receding
+            timesteps to skip. When not specified, no steps are skipped and the 
+            next step is 1
+            
+        plotfunction : function
+            a function which creates or updates a plot for live viewing of
+            results, probably broken, untested
+        
+        """
+        
+        self.emulator = emulator
+        self.control = control
+        self.boundaryconditions = boundaryconditions
+
+        self.emulationtime = emulationtime
+        self.resulttimestep = resulttimestep
+        
+        if nextstepcalculator == None:
+            def nextstepcalculator(controlsolution):
+                return 1
+
+        self.nextstepcalculator = nextstepcalculator
+            
+        self.plotfunction = plotfunction
+        
+        self.res = {}
+        self.appendres = {}
+
+        
+    def __call__(self):
+        """
+        Runs the mpc simulation
+         
+        Returns
+        -------
+        res : dict
+            a dictionary with results, also stored in the res attribute
+            
+        """
+        
+        # initialize the emulator
+        self.emulator.initialize()
+        starttime = 0
+        
+        
+        if self.plotfunction:
+            (fig,ax,pl) = self.plotfunction()
+
+        # prepare a progress bar
+        barwidth = 80
+        barvalue = 0
+        print('Run MPC %s |' %(' '*(barwidth-10)))
+        #sys.stdout.write('[%s]\n' % (' ' * barwidth))
+        #sys.stdout.flush()
+        #sys.stdout.write('\b' * (barwidth+1))
+        
+        while starttime < self.emulationtime:
+        
+            # calculate control signals for the control horizon
+            control = self.control(starttime)
+            
+            # create a simulation time vector
+            nextStep = self.nextstepcalculator(control)
+            time = np.arange(starttime,min(self.emulationtime+self.resulttimestep,starttime+nextStep*self.control.receding+0.01*self.resulttimestep),self.resulttimestep,dtype=np.float)
+            time[-1] = min(time[-1],self.emulationtime)
+            
+            # create input of all controls and the required boundary conditions
+            # add times at the control time steps minus 1e-6 times the result time step to achieve zero order hold
+            ind = np.where((control['time']-1e-6*self.resulttimestep > time[0]) & (control['time']-1e-6*self.resulttimestep <= time[-1]))
+            inputtime = np.sort(np.concatenate((time, control['time'][ind]-1e-6*self.resulttimestep)))
+            input = {'time': inputtime}
+            
+            # add controls first
+            for key in control:
+                if key in self.emulator.inputs and not key in input:
+                    input[key] = interp_zoh(input['time'],control['time'],control[key])
+            
+            # add the rest of the inputs from the boundary conditions
+            for key in self.emulator.inputs:
+                if not key in input and key in self.boundaryconditions:
+                    input[key] = self.boundaryconditions.interp(key,input['time'])
+                elif not key in input:
+                    print('Warning {} not found in boundaryconditions object'.format(key))
+                    
+            # prepare and run the simulation
+            self.emulator(time,input)
+            
+            # plot results
+            if self.plotfunction:
+                self.plotfunction(pl=pl,res=self.emulator.res)
+            
+            # update starting time
+            starttime = self.emulator.res['time'][-1]
+
+            # update the progress bar
+            if starttime/self.emulationtime*barwidth >= barvalue:
+                addbars = int(round(starttime/self.emulationtime*barwidth-barvalue))
+                sys.stdout.write(addbars*'-')
+                sys.stdout.flush()
+                barvalue += addbars
+        
+        # copy the results to a local res dictionary
+        self.res.update( self.emulator.res )
+        
+        # interpolate the boundary conditions and add them to self.res
+        self.res.update( self.boundaryconditions(self.res['time']) )
+        
+        
+        sys.stdout.write('  done')
+        sys.stdout.write("\n")
+        sys.stdout.flush()
+        
+        return self.res
+
+def interp_zoh(x,xp,fp):
+    return np.array([fp[int((len(xp)-1)*(xi-xp[0])/(xp[-1]-xp[0]))] for xi in x])
