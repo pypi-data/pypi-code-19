@@ -1,0 +1,74 @@
+#!/usr/bin/env python
+import requests
+import slumber
+import logging
+
+class OnlineCtl():
+    """
+        PythonClass to interact with online.net API
+    """
+
+    def __init__(self, token):
+        """
+            Initialize connexion with Online API
+        """
+
+        self.api_session = requests.session()
+        self.token = 'Bearer ' + token
+        self.api_url = 'https://api.online.net/api/v1'
+        self.api_session.headers['Authorization'] = self.token
+        self.api = slumber.API(self.api_url, session=self.api_session, 
+                append_slash=False)
+
+    def get_lists_of_servers(self):
+
+        servers_list = []
+        api_server_endpoint = self.api_url + '/server/'
+        logging.debug("Call {}".format(api_server_endpoint))
+        for i in self.api_session.get(api_server_endpoint).json():
+            logging.debug(i.split('/')[-1])
+            server = self.api_session.get(api_server_endpoint + i.split('/')[-1])
+            logging.debug(api_server_endpoint + i.split('/')[-1])
+            servers_list.append(server.json())
+        self.servers_list = servers_list
+        return(servers_list)
+
+    def get_available_os(self, server_id):
+
+        try:
+            int(server_id)
+        except Exception as e:
+            print("server_id must be an integer : {}".format(e))
+        os_list = self.api.server.operatingSystems(server_id).get()
+        return os_list
+
+    def get_sshkeys(self):
+
+        ssh_keys = self.api.user.key.ssh.get()
+        return ssh_keys
+
+    def put_sshkeys(self,pubkey):
+
+        pass
+
+    def install_server(self, server_id, os_id, hostname, user_login, 
+            user_password, root_password, pannel_password, ssh_keys, partition_template=None, 
+            partition=None):
+
+        api_server_endpoint = self.api_url + '/server/install/' + server_id
+
+        if partition_template:
+            server_configuration = {'os_id': os_id, 'hostname': hostname,'user_login': user_login, 'user_password': 
+                    user_password, 'root_password': root_password, 'pannel_password': pannel_password,
+                    'ssh_keys': [ssh_keys], 'partitioning_template_ref': partition_template}
+        elif partition:
+            server_configuration = {'os_id': os_id, 'hostname': hostname,'user_login': user_login, 'user_password': 
+                    user_password, 'root_password': root_password, 'pannel_password': pannel_password,
+                    'ssh_keys': [ssh_keys], 'partitioning': partition}
+        else:
+            logging.error("You must use partition_template")
+
+        try:
+            self.api_session.post(api_server_endpoint, json=server_configuration)
+        except Exception as e:
+            loggin.error("Error: {}".format(e))
