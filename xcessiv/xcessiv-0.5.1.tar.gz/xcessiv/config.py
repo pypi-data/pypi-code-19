@@ -1,0 +1,10 @@
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379
+REDIS_DB = 8
+QUEUES = ['default']
+
+XCESSIV_PORT = 1994
+NUM_WORKERS = 1
+
+XCESSIV_META_FEATURES_FOLDER = 'meta-features'
+XCESSIV_NOTEBOOK_NAME = 'xcnb.db'
