@@ -1,0 +1,44 @@
+import sys
+import os
+from setuptools import setup
+from setuptools.extension import Extension
+
+from distutils.version import LooseVersion
+
+VERSION = '0.3.2'
+
+# Auto generate a __version__ package for the package to import
+with open(os.path.join('gil_load', '__version__.py'), 'w') as f:
+    f.write("__version__ = '%s'\n"%VERSION)
+
+# Use cython to cythonize the extensions, but if the .c file is already
+# distributed with sdist, use it and don't require users to have cython:
+USE_CYTHON = False
+if '--use-cython' in sys.argv:
+    USE_CYTHON = True
+    sys.argv.remove('--use-cython')
+if 'sdist' in sys.argv:
+    USE_CYTHON = True
+
+if USE_CYTHON:
+    ext = '.pyx'
+else:
+    ext = '.c'
+
+ext_modules = [Extension('gil_load.gil_load', ["gil_load/gil_load" + ext])]
+
+if USE_CYTHON:
+    from Cython.Build import cythonize
+    ext_modules = cythonize(ext_modules)
+    
+setup(
+    name = 'gil_load',
+    version=VERSION,
+    description='Utility for measuring the fraction of time the GIL is held in a program',
+    author='Chris Billington',
+    author_email='chrisjbillington@gmail.com',
+    url='https://github.com/chrisjbillington/gil_load',
+    license="BSD",
+    packages=['gil_load'],
+    ext_modules = ext_modules
+)
