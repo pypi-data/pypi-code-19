@@ -1,0 +1,285 @@
+import grpc
+from grpc.framework.common import cardinality
+from grpc.framework.interfaces.face import utilities as face_utilities
+
+import qbit_pb2 as qbit__pb2
+import qbit_pb2 as qbit__pb2
+import qbit_pb2 as qbit__pb2
+import qbit_pb2 as qbit__pb2
+import qbit_pb2 as qbit__pb2
+import qbit_pb2 as qbit__pb2
+import qbit_pb2 as qbit__pb2
+import qbit_pb2 as qbit__pb2
+import google.protobuf.empty_pb2 as google_dot_protobuf_dot_empty__pb2
+import qbit_pb2 as qbit__pb2
+import qbit_pb2 as qbit__pb2
+import qbit_pb2 as qbit__pb2
+import google.protobuf.empty_pb2 as google_dot_protobuf_dot_empty__pb2
+import qbit_pb2 as qbit__pb2
+import qbit_pb2 as qbit__pb2
+import qbit_pb2 as qbit__pb2
+import qbit_pb2 as qbit__pb2
+import qbit_pb2 as qbit__pb2
+import qbit_pb2 as qbit__pb2
+import qbit_pb2 as qbit__pb2
+import qbit_pb2 as qbit__pb2
+import qbit_pb2 as qbit__pb2
+import qbit_pb2 as qbit__pb2
+import google.protobuf.empty_pb2 as google_dot_protobuf_dot_empty__pb2
+import qbit_pb2 as qbit__pb2
+import google.protobuf.empty_pb2 as google_dot_protobuf_dot_empty__pb2
+import qbit_pb2 as qbit__pb2
+import google.protobuf.empty_pb2 as google_dot_protobuf_dot_empty__pb2
+
+
+class QbitStub(object):
+
+  def __init__(self, channel):
+    """Constructor.
+
+    Args:
+      channel: A grpc.Channel.
+    """
+    self.CompareMolecule = channel.unary_unary(
+        '/qbit.services.Qbit/CompareMolecule',
+        request_serializer=qbit__pb2.CompareRequest.SerializeToString,
+        response_deserializer=qbit__pb2.ComparisonResult.FromString,
+        )
+    self.Hobo2Qubo = channel.unary_unary(
+        '/qbit.services.Qbit/Hobo2Qubo',
+        request_serializer=qbit__pb2.BinaryPolynomial.SerializeToString,
+        response_deserializer=qbit__pb2.BinaryPolynomial.FromString,
+        )
+    self.SolveQubo = channel.unary_unary(
+        '/qbit.services.Qbit/SolveQubo',
+        request_serializer=qbit__pb2.QuboRequest.SerializeToString,
+        response_deserializer=qbit__pb2.QuboResponse.FromString,
+        )
+    self.AddBillingProfile = channel.unary_unary(
+        '/qbit.services.Qbit/AddBillingProfile',
+        request_serializer=qbit__pb2.BillingProfile.SerializeToString,
+        response_deserializer=qbit__pb2.BillingProfileResponse.FromString,
+        )
+    self.GetBillingProfile = channel.unary_unary(
+        '/qbit.services.Qbit/GetBillingProfile',
+        request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+        response_deserializer=qbit__pb2.BillingProfileResponse.FromString,
+        )
+    self.CreateClient = channel.unary_unary(
+        '/qbit.services.Qbit/CreateClient',
+        request_serializer=qbit__pb2.Client.SerializeToString,
+        response_deserializer=qbit__pb2.ClientResponse.FromString,
+        )
+    self.ListClients = channel.unary_unary(
+        '/qbit.services.Qbit/ListClients',
+        request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+        response_deserializer=qbit__pb2.ClientResponse.FromString,
+        )
+    self.DeleteClient = channel.unary_unary(
+        '/qbit.services.Qbit/DeleteClient',
+        request_serializer=qbit__pb2.Client.SerializeToString,
+        response_deserializer=qbit__pb2.ClientResponse.FromString,
+        )
+    self.ListOperations = channel.unary_unary(
+        '/qbit.services.Qbit/ListOperations',
+        request_serializer=qbit__pb2.ListOperationsRequest.SerializeToString,
+        response_deserializer=qbit__pb2.ListOperationsResponse.FromString,
+        )
+    self.GetOperation = channel.unary_unary(
+        '/qbit.services.Qbit/GetOperation',
+        request_serializer=qbit__pb2.GetOperationRequest.SerializeToString,
+        response_deserializer=qbit__pb2.Operation.FromString,
+        )
+    self.GetOperationToWorkOn = channel.unary_unary(
+        '/qbit.services.Qbit/GetOperationToWorkOn',
+        request_serializer=qbit__pb2.GetOperationToWorkOnRequest.SerializeToString,
+        response_deserializer=qbit__pb2.Operation.FromString,
+        )
+    self.CancelOperation = channel.unary_unary(
+        '/qbit.services.Qbit/CancelOperation',
+        request_serializer=qbit__pb2.CancelOperationRequest.SerializeToString,
+        response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        )
+    self.CompleteOperation = channel.unary_unary(
+        '/qbit.services.Qbit/CompleteOperation',
+        request_serializer=qbit__pb2.CompleteOperationRequest.SerializeToString,
+        response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        )
+    self.ErrorOperation = channel.unary_unary(
+        '/qbit.services.Qbit/ErrorOperation',
+        request_serializer=qbit__pb2.ErrorOperationRequest.SerializeToString,
+        response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        )
+
+
+class QbitServicer(object):
+
+  def CompareMolecule(self, request, context):
+    """Compare molecules.
+
+    With a specified solver, compare molecular similarities with a set of criterias.
+
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def Hobo2Qubo(self, request, context):
+    """Converts HOBO to QUBO.
+
+    Given a Higher Order Binary Optimization (HOBO) problem, convert into
+    QUBO form.
+
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def SolveQubo(self, request, context):
+    """Solves a QUBO.
+
+    Given a QUBO and a solver with optionally set parameters, return a list
+    of Solutions ordered by energy.
+
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def AddBillingProfile(self, request, context):
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def GetBillingProfile(self, request, context):
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def CreateClient(self, request, context):
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def ListClients(self, request, context):
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def DeleteClient(self, request, context):
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def ListOperations(self, request, context):
+    """rpc Quadprog(QuadprogRequest) returns (QuadprogResponse) {};
+    rpc AsyncQuadprog(QuadprogRequest) returns (Operation) {};
+    rpc AsyncLpProblem(LpProblemRequest) returns (Operation) {};
+
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def GetOperation(self, request, context):
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def GetOperationToWorkOn(self, request, context):
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def CancelOperation(self, request, context):
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def CompleteOperation(self, request, context):
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def ErrorOperation(self, request, context):
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+
+def add_QbitServicer_to_server(servicer, server):
+  rpc_method_handlers = {
+      'CompareMolecule': grpc.unary_unary_rpc_method_handler(
+          servicer.CompareMolecule,
+          request_deserializer=qbit__pb2.CompareRequest.FromString,
+          response_serializer=qbit__pb2.ComparisonResult.SerializeToString,
+      ),
+      'Hobo2Qubo': grpc.unary_unary_rpc_method_handler(
+          servicer.Hobo2Qubo,
+          request_deserializer=qbit__pb2.BinaryPolynomial.FromString,
+          response_serializer=qbit__pb2.BinaryPolynomial.SerializeToString,
+      ),
+      'SolveQubo': grpc.unary_unary_rpc_method_handler(
+          servicer.SolveQubo,
+          request_deserializer=qbit__pb2.QuboRequest.FromString,
+          response_serializer=qbit__pb2.QuboResponse.SerializeToString,
+      ),
+      'AddBillingProfile': grpc.unary_unary_rpc_method_handler(
+          servicer.AddBillingProfile,
+          request_deserializer=qbit__pb2.BillingProfile.FromString,
+          response_serializer=qbit__pb2.BillingProfileResponse.SerializeToString,
+      ),
+      'GetBillingProfile': grpc.unary_unary_rpc_method_handler(
+          servicer.GetBillingProfile,
+          request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+          response_serializer=qbit__pb2.BillingProfileResponse.SerializeToString,
+      ),
+      'CreateClient': grpc.unary_unary_rpc_method_handler(
+          servicer.CreateClient,
+          request_deserializer=qbit__pb2.Client.FromString,
+          response_serializer=qbit__pb2.ClientResponse.SerializeToString,
+      ),
+      'ListClients': grpc.unary_unary_rpc_method_handler(
+          servicer.ListClients,
+          request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+          response_serializer=qbit__pb2.ClientResponse.SerializeToString,
+      ),
+      'DeleteClient': grpc.unary_unary_rpc_method_handler(
+          servicer.DeleteClient,
+          request_deserializer=qbit__pb2.Client.FromString,
+          response_serializer=qbit__pb2.ClientResponse.SerializeToString,
+      ),
+      'ListOperations': grpc.unary_unary_rpc_method_handler(
+          servicer.ListOperations,
+          request_deserializer=qbit__pb2.ListOperationsRequest.FromString,
+          response_serializer=qbit__pb2.ListOperationsResponse.SerializeToString,
+      ),
+      'GetOperation': grpc.unary_unary_rpc_method_handler(
+          servicer.GetOperation,
+          request_deserializer=qbit__pb2.GetOperationRequest.FromString,
+          response_serializer=qbit__pb2.Operation.SerializeToString,
+      ),
+      'GetOperationToWorkOn': grpc.unary_unary_rpc_method_handler(
+          servicer.GetOperationToWorkOn,
+          request_deserializer=qbit__pb2.GetOperationToWorkOnRequest.FromString,
+          response_serializer=qbit__pb2.Operation.SerializeToString,
+      ),
+      'CancelOperation': grpc.unary_unary_rpc_method_handler(
+          servicer.CancelOperation,
+          request_deserializer=qbit__pb2.CancelOperationRequest.FromString,
+          response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+      ),
+      'CompleteOperation': grpc.unary_unary_rpc_method_handler(
+          servicer.CompleteOperation,
+          request_deserializer=qbit__pb2.CompleteOperationRequest.FromString,
+          response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+      ),
+      'ErrorOperation': grpc.unary_unary_rpc_method_handler(
+          servicer.ErrorOperation,
+          request_deserializer=qbit__pb2.ErrorOperationRequest.FromString,
+          response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+      ),
+  }
+  generic_handler = grpc.method_handlers_generic_handler(
+      'qbit.services.Qbit', rpc_method_handlers)
+  server.add_generic_rpc_handlers((generic_handler,))
