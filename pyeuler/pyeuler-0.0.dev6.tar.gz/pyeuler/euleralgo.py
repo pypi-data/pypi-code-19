@@ -1,0 +1,2 @@
+def testalgo():
+    print('Hoorah!')
