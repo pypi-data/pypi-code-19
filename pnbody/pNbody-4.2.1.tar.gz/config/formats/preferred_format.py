@@ -1,0 +1,1 @@
+ftype = ["gadget", "gh5"]
