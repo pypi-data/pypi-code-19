@@ -1,0 +1,11 @@
+from setuptools import setup
+
+setup(name='freetile',
+      version='0.0',
+      description='freely tiling script for X',
+      url='http://github.com/rbn42/freetile',
+      author='rbn42',
+      author_email='bl100@students.waikato.ac.nz',
+      license='MIT',
+      packages=['freetile'],
+      zip_safe=False)
